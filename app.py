@@ -9,7 +9,7 @@ from functools import partial
 # 1) Page Configuration
 # ======================================================================
 st.set_page_config(
-    page_title="Artikel Übersetzer",
+    page_title="Artikel Übersetzer (nur für intere Tests)",
     page_icon="🌐",
     layout="wide"
 )
