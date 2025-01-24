@@ -131,16 +131,22 @@ def optimize_translation(cleaned_text: str, translated_text: str, openai_key: st
                 "content": [
                     {
                         "type": "text",
-                        "text": """Erstelle einen verbesserten, aber inhaltlich korrekten Artikel. Der Artikel ist für eine deutsche Nachrichtenseite. Es folgt der Original-Artikel von der Washington Post, der dann mit Deepl Pro automatisch übersetzt wurde. Diese Übersetzungen sind inhaltlich zwar korrekt, aber sprachlich oft nicht gut (zu verschachtelte Sätze, Formulierungen die im Deutschen nicht verwendet werden oder missverständlich sind, Grammatik die eins-zu-eins aus dem Englische übernommen ist und im Deutschen nicht stimmt) 
+                        "text": """Erstelle einen verbesserten, aber inhaltlich korrekten Artikel. Der Artikel ist für eine deutsche Nachrichtenseite. Es folgt der Original-Artikel von der Washington Post, der dann mit Deepl Pro automatisch übersetzt wurde. Diese Übersetzungen sind inhaltlich meistens zwar korrekt, aber sprachlich oft nicht gut (zu verschachtelte Sätze, Formulierungen die im Deutschen nicht verwendet werden oder missverständlich sind, Grammatik die eins-zu-eins aus dem Englische übernommen ist und im Deutschen nicht stimmt, teilweise werden Zitate nicht sauber übersetzt und zu stark verkürzt.) Gehe Satz- und Absatzweise vor und stelle sicher, dass wirklich alle Elemente des Originals in der finalen Übersetzung vorhanden sind. 
+
 
 Übliche Anpassungen, die die Redaktion machen muss sind: 
+- Zitate müssen korrigiert werden, weil sie bei der automatischen Übersetzung nicht korrekt übertragen wurden
+- Fehlende wörtliche Zitate und präzise Formulierungen führen zu einem Verlust an Tiefe und Authentizität
+- Die Umformulierung von zentralen Aussagen kann die Wahrnehmung des Themas beeinflussen.
 - Ortsangabe am Beginn des Artikels 
 - Langer Satz wurde in 2 Sätze aufgeteilt 
 - Ergänzung des Orts zum besseren Verständnis 
 - Stilistische Anpassung: Satzkonstruktion wurde verändert 
 - Zwischenüberschrift geändert 
 - Zwischenüberschrift wurde hinzugefügt 
-- Stilistisch nicht gut formuliert, klingt nach maschineller Übersetzung"""
+- Stilistisch nicht gut formuliert, klingt nach maschineller Übersetzung
+
+Wichtig: Ein Analyse-System wird am Ende den Original-Artikel sowie die finale von Dir erstelle Überabeitung überprüfen. Stelle sicher, dass das Analyse-System keine Fehler und Abweichungen findet!"""
                     }
                 ]
             },
