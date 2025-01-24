@@ -68,7 +68,16 @@ Die Fakten und Aussagen aus dem Original-Artikel müssen aber erhalten bleiben -
 - Zwischenüberschrift wurde hinzugefügt 
 - Stilistisch nicht gut formuliert, klingt nach maschineller Übersetzung
 
-Wichtig: Ein Analyse-System wird am Ende den Original-Artikel sowie die finale von Dir erstelle Überabeitung überprüfen. Stelle sicher, dass das Analyse-System keine Fehler und Abweichungen findet!"""
+Wichtig: Ein Analyse-System wird am Ende den Original-Artikel sowie die finale von Dir erstelle Überabeitung überprüfen. Stelle sicher, dass das Analyse-System keine Fehler und Abweichungen findet!
+
+*Ausgabe-Format:*
+Überschrift (Headline)
+<break>
+Kurzer Vorspann (Teaser)
+<break>
+Artikel-Text (Body) mit Zwischenüberschriften
+Nach jeder Zwischenüberschrift eine Zeile Abstand <break> einfügen
+"""
 
 # ======================================================================
 # Message Templates
