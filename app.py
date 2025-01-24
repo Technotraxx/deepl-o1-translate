@@ -312,12 +312,15 @@ if st.session_state.processed_text['original']:
         )
         
     with tab2:
-        st.text_area(
-            "Bereinigter Text",
-            st.session_state.processed_text['cleaned'],
-            height=400,
-            disabled=True
-        )
+        if input_method == "URL":
+            st.text_area(
+                "Bereinigter Text",
+                st.session_state.processed_text['cleaned'],
+                height=400,
+                disabled=True
+            )
+        else:
+            st.info("Bei Datei-Upload wird keine Bereinigung durchgeführt. Der bereinigte Text entspricht dem Original.")
         
     with tab3:
         st.text_area(
@@ -340,10 +343,16 @@ if st.session_state.processed_text['original']:
         col_orig, col_final = st.columns(2)
         
         with col_orig:
-            st.markdown("### Original (Bereinigt)")
+            if input_method == "URL":
+                st.markdown("### Original (Bereinigt)")
+                display_text = st.session_state.processed_text['cleaned']
+            else:
+                st.markdown("### Original")
+                display_text = st.session_state.processed_text['original']
+            
             st.text_area(
                 "",  # Empty label as we use markdown above
-                st.session_state.processed_text['cleaned'],
+                display_text,
                 height=600,
                 disabled=False,
                 key="compare_original"
@@ -431,7 +440,6 @@ if st.session_state.processed_text['original']:
                 mime="text/plain",
                 use_container_width=True
             )
-
     
 # ======================================================================
 # 6) Footer
