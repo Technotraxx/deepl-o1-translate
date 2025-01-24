@@ -264,7 +264,7 @@ if st.session_state.processed_text['original']:
                 "",  # Empty label as we use markdown above
                 st.session_state.processed_text['cleaned'],
                 height=600,
-                disabled=True,
+                disabled=False,
                 key="compare_original"
             )
             
@@ -274,7 +274,7 @@ if st.session_state.processed_text['original']:
                 "",  # Empty label as we use markdown above
                 st.session_state.processed_text['final'],
                 height=600,
-                disabled=True,
+                disabled=False,
                 key="compare_final"
             )
 
