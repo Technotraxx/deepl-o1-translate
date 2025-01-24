@@ -213,11 +213,12 @@ if st.session_state.processed_text['original']:
     st.write("---")
     
     # Create tabs for different versions including new Analysis tab
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🌐 Original", 
         "🧹 Bereinigt", 
         "🔄 DeepL Übersetzung",
         "✨ Finale Version",
+        "🔗 Vergleich",
         "🔍 Qualitätsprüfung"
     ])
     
@@ -252,9 +253,33 @@ if st.session_state.processed_text['original']:
             height=400,
             disabled=False
         )
-
+        
     with tab5:
-        # Always show the analysis button
+        # Create a side-by-side comparison view
+        col_orig, col_final = st.columns(2)
+        
+        with col_orig:
+            st.markdown("### Original (Bereinigt)")
+            st.text_area(
+                "",  # Empty label as we use markdown above
+                st.session_state.processed_text['cleaned'],
+                height=600,
+                disabled=True,
+                key="compare_original"
+            )
+            
+        with col_final:
+            st.markdown("### Finale Übersetzung")
+            st.text_area(
+                "",  # Empty label as we use markdown above
+                st.session_state.processed_text['final'],
+                height=600,
+                disabled=True,
+                key="compare_final"
+            )
+
+    with tab6:
+        # Quality check button and display
         if st.button("Qualitätsprüfung durchführen", type="primary", use_container_width=True):
             try:
                 with st.status("Führe Qualitätsprüfung durch...", expanded=True) as status:
@@ -268,7 +293,6 @@ if st.session_state.processed_text['original']:
             except Exception as e:
                 st.error(f"Fehler bei der Qualitätsprüfung: {str(e)}")
         
-        # Show analysis results if available
         if st.session_state.processed_text.get('analysis'):
             st.markdown("## Prüfbericht")
             st.markdown(st.session_state.processed_text['analysis'])
