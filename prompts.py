@@ -73,8 +73,7 @@ Wichtig: Ein Analyse-System wird am Ende den Original-Artikel sowie die finale v
 *Ausgabe-Format:*
 Überschrift (Headline)
 
-Kurzer Vorspann (Teaser)
-
+Ortsmarke
 Artikel-Text (Body) mit Zwischenüberschriften
 
 Nach jeder Zwischenüberschrift eine Zeile Abstand einfügen
