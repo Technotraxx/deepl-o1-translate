@@ -22,7 +22,8 @@ if 'processed_text' not in st.session_state:
         'original': '',
         'cleaned': '',
         'translated': '',
-        'final': ''
+        'final': '',
+        'analysis': ''  # New field for the analysis report
     }
 
 # ======================================================================
@@ -157,6 +158,67 @@ def optimize_translation(cleaned_text: str, translated_text: str, openai_key: st
     )
     return response.choices[0].message.content
 
+
+@st.cache_data(ttl=3600)
+def analyze_translation(cleaned_text: str, final_text: str, openai_key: str) -> str:
+    """Analyzes the translation quality using GPT-4o-mini with caching"""
+    client = OpenAI(api_key=openai_key)
+    
+    system_prompt = """## Aufgabe
+Führe eine systematische Analyse zwischen dem englischen Originaltext und der deutschen Übersetzung durch.
+## Prüfkategorien
+### 1. FAKTENCHECK
+* Vergleiche alle Zahlen, Daten, Maßeinheiten
+* Prüfe Namen, Titel, Institutionen auf korrekte Übernahme
+* Kontrolliere die präzise Übersetzung aller Zitate
+* Stelle sicher, dass Fachbegriffe korrekt übertragen wurden
+### 2. VOLLSTÄNDIGKEIT
+* Analysiere den Text Absatz für Absatz
+* Identifiziere Kernaussagen und wichtige Details im Original
+* Prüfe, ob alle relevanten Informationen in der Übersetzung enthalten sind
+* Markiere fehlende oder zusätzliche Informationen
+### 3. STRUKTUR & KONTEXT
+* Vergleiche den logischen Aufbau beider Texte
+* Prüfe die korrekte Wiedergabe von Zusammenhängen
+* Kontrolliere die angemessene Übertragung des Sprachstils
+* Achte auf zielsprachliche Anpassungen
+## Ausgabeformat
+1. **Abweichungsanalyse**
+   * Liste konkrete Unterschiede zwischen Original und Übersetzung
+   * Belege mit Textbeispielen
+2. **Genauigkeitsbewertung**
+   * Bewerte die Präzision der Übersetzung
+   * Dokumentiere Stärken und Schwächen
+3. **Qualitätseinschätzung**
+   * Gib eine fundierte Gesamtbewertung
+   * Verweise auf besonders gelungene oder problematische Aspekte
+## Methodik
+* Gehe systematisch Absatz für Absatz vor
+* Belege alle Bewertungen mit konkreten Beispielen
+* Achte besonders auf fachliche Korrektheit
+* Berücksichtige die Zielgruppe der Übersetzung"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": system_prompt
+            },
+            {
+                "role": "user",
+                "content": f"# Englischer Originaltext:\n\n{cleaned_text}\n\n# Deutsche Übersetzung:\n\n{final_text}"
+            }
+        ],
+        response_format={"type": "text"},
+        temperature=0,
+        max_completion_tokens=10000,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response.choices[0].message.content
+
 # ======================================================================
 # 5) Main App Layout
 # ======================================================================
@@ -205,12 +267,13 @@ if st.button("Artikel verarbeiten", type="primary", use_container_width=True):
 if st.session_state.processed_text['original']:
     st.write("---")
     
-    # Create tabs for different versions
-    tab1, tab2, tab3, tab4 = st.tabs([
+    # Create tabs for different versions including new Analysis tab
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "🌐 Original", 
         "🧹 Bereinigt", 
         "🔄 DeepL Übersetzung",
-        "✨ Finale Version"
+        "✨ Finale Version",
+        "🔍 Qualitätsprüfung"
     ])
     
     with tab1:
@@ -244,9 +307,38 @@ if st.session_state.processed_text['original']:
             height=400,
             disabled=True
         )
+
+    with tab5:
+        if not st.session_state.processed_text.get('analysis'):
+            if st.button("Qualitätsprüfung durchführen", type="primary", use_container_width=True):
+                try:
+                    with st.status("Führe Qualitätsprüfung durch...", expanded=True) as status:
+                        analysis_result = analyze_translation(
+                            st.session_state.processed_text['cleaned'],
+                            st.session_state.processed_text['final'],
+                            openai_key
+                        )
+                        st.session_state.processed_text['analysis'] = analysis_result
+                        status.update(label="Qualitätsprüfung abgeschlossen! ✅", state="complete")
+                except Exception as e:
+                    st.error(f"Fehler bei der Qualitätsprüfung: {str(e)}")
+        
+        if st.session_state.processed_text.get('analysis'):
+            st.markdown(st.session_state.processed_text['analysis'])
+            
+            # Download button for analysis
+            st.download_button(
+                "Download Prüfbericht",
+                st.session_state.processed_text['analysis'],
+                file_name="quality_report.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
     
-    # Download buttons
-    col1, col2, col3, col4 = st.columns(4)
+    # Download buttons for all versions
+    st.write("---")
+    st.subheader("Downloads")
+    col1, col2, col3, col4, col5 = st.columns(5)
     
     def download_text(text, filename):
         st.download_button(
@@ -280,7 +372,14 @@ if st.session_state.processed_text['original']:
             st.session_state.processed_text['final'],
             "final.txt"
         )
-
+    
+    with col5:
+        if st.session_state.processed_text.get('analysis'):
+            download_text(
+                st.session_state.processed_text['analysis'],
+                "analysis.txt"
+            )
+    
 # ======================================================================
 # 6) Footer
 # ======================================================================
