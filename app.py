@@ -5,6 +5,8 @@ from openai import OpenAI
 import json
 from functools import partial
 from datetime import datetime
+import docx
+import io
 
 from prompts import (
     get_cleaning_messages,
@@ -40,6 +42,27 @@ def get_file_prefix(text: str) -> str:
     except Exception:
         # Fallback if something goes wrong
         return f"article_{datetime.now().strftime('%Y_%m_%d')}"
+
+def read_text_file(uploaded_file):
+    """Read content from a text file"""
+    return uploaded_file.getvalue().decode('utf-8')
+
+def read_docx_file(uploaded_file):
+    """Read content from a DOCX file"""
+    doc = docx.Document(uploaded_file)
+    full_text = []
+    for paragraph in doc.paragraphs:
+        full_text.append(paragraph.text)
+    return '\n'.join(full_text)
+
+def read_rtf_file(uploaded_file):
+    """Read content from an RTF file"""
+    # Basic RTF to text conversion - you might want to use a more robust library
+    content = uploaded_file.getvalue().decode('utf-8')
+    # Remove RTF formatting - this is a simple approach
+    text = ' '.join(content.split('\\')[1:])  # Very basic RTF cleaning
+    return text
+
 
 # ======================================================================
 # 2) Session State Initialization
@@ -159,61 +182,118 @@ def analyze_translation(cleaned_text: str, final_text: str, openai_key: str) -> 
 # ======================================================================
 # 5) Main App Layout
 # ======================================================================
-st.title("🌐 Artikel Übersetzer (Test-Version nur für internen Gebrauch")
+st.title("🌐 Artikel Übersetzer (Test-Version nur für internen Gebrauch)")
 
-# URL Input
-url = st.text_input(
-    "Artikel URL",
-    placeholder="https://www.example.com/article",
-    help="Fügen Sie die URL des zu übersetzenden Artikels ein"
+# Input method selection
+input_method = st.radio(
+    "Wählen Sie die Eingabemethode:",
+    ["URL", "Datei-Upload"]
 )
 
-# Process Button
-if st.button("Artikel verarbeiten", type="primary", use_container_width=True):
-    if not all([url, openai_key, jina_key, deepl_key]):
-        st.error("Bitte füllen Sie alle erforderlichen Felder aus (URL und API-Keys)")
-    else:
-        try:
-            # Reset all stored texts including analysis
-            st.session_state.processed_text = {
-                'original': '',
-                'cleaned': '',
-                'translated': '',
-                'final': '',
-                'analysis': ''
-            }
-            
-            with st.status("Verarbeite Artikel...", expanded=True) as status:
-                # Extract text
-                st.write("🔍 Extrahiere Text von URL...")
-                raw_text = extract_text_from_url(url, jina_key)
-                st.session_state.processed_text['original'] = raw_text
+if input_method == "URL":
+    # URL Input
+    url = st.text_input(
+        "Artikel URL",
+        placeholder="https://www.example.com/article",
+        help="Fügen Sie die URL des zu übersetzenden Artikels ein"
+    )
+    
+    if st.button("URL verarbeiten", type="primary", use_container_width=True):
+        if not all([url, openai_key, jina_key, deepl_key]):
+            st.error("Bitte füllen Sie alle erforderlichen Felder aus (URL und API-Keys)")
+        else:
+            try:
+                # Reset all stored texts including analysis
+                st.session_state.processed_text = {
+                    'original': '',
+                    'cleaned': '',
+                    'translated': '',
+                    'final': '',
+                    'analysis': ''
+                }
                 
-                # Clean text
-                st.write("🧹 Bereinige Text...")
-                cleaned_text = clean_text_with_gpt(raw_text, openai_key)
-                st.session_state.processed_text['cleaned'] = cleaned_text
-                
-                # Translate text
-                st.write("🔄 Übersetze Text...")
-                translated_text = translate_text(cleaned_text, deepl_key)
-                st.session_state.processed_text['translated'] = translated_text
-                
-                # Optimize translation
-                st.write("✨ Optimiere Übersetzung...")
-                final_text = optimize_translation(cleaned_text, translated_text, openai_key)
-                st.session_state.processed_text['final'] = final_text
-                
-                status.update(label="Verarbeitung abgeschlossen! ✅", state="complete")
+                with st.status("Verarbeite URL...", expanded=True) as status:
+                    # Extract text
+                    st.write("🔍 Extrahiere Text von URL...")
+                    raw_text = extract_text_from_url(url, jina_key)
+                    st.session_state.processed_text['original'] = raw_text
+                    
+                    # Clean text
+                    st.write("🧹 Bereinige Text...")
+                    cleaned_text = clean_text_with_gpt(raw_text, openai_key)
+                    st.session_state.processed_text['cleaned'] = cleaned_text
+                    
+                    # Translate text
+                    st.write("🔄 Übersetze Text...")
+                    translated_text = translate_text(cleaned_text, deepl_key)
+                    st.session_state.processed_text['translated'] = translated_text
+                    
+                    # Optimize translation
+                    st.write("✨ Optimiere Übersetzung...")
+                    final_text = optimize_translation(cleaned_text, translated_text, openai_key)
+                    st.session_state.processed_text['final'] = final_text
+                    
+                    status.update(label="Verarbeitung abgeschlossen! ✅", state="complete")
+                    
+            except Exception as e:
+                st.error(f"Fehler bei der Verarbeitung: {str(e)}")
 
-        except Exception as e:
-            st.error(f"Fehler bei der Verarbeitung: {str(e)}")
+else:  # File Upload
+    uploaded_file = st.file_uploader(
+        "Wählen Sie eine Datei aus",
+        type=['txt', 'docx', 'rtf'],
+        help="Unterstützte Formate: TXT, DOCX, RTF"
+    )
+    
+    if uploaded_file is not None:
+        if st.button("Datei verarbeiten", type="primary", use_container_width=True):
+            if not all([deepl_key, openai_key]):  # Note: jina_key not needed for file upload
+                st.error("Bitte füllen Sie alle erforderlichen API-Keys aus")
+            else:
+                try:
+                    # Reset all stored texts including analysis
+                    st.session_state.processed_text = {
+                        'original': '',
+                        'cleaned': '',
+                        'translated': '',
+                        'final': '',
+                        'analysis': ''
+                    }
+                    
+                    with st.status("Verarbeite Datei...", expanded=True) as status:
+                        # Read file based on type
+                        file_type = uploaded_file.name.split('.')[-1].lower()
+                        if file_type == 'txt':
+                            text = read_text_file(uploaded_file)
+                        elif file_type == 'docx':
+                            text = read_docx_file(uploaded_file)
+                        elif file_type == 'rtf':
+                            text = read_rtf_file(uploaded_file)
+                        
+                        # Store in session state (original and cleaned are the same for file upload)
+                        st.session_state.processed_text['original'] = text
+                        st.session_state.processed_text['cleaned'] = text
+                        
+                        # Translate text
+                        st.write("🔄 Übersetze Text...")
+                        translated_text = translate_text(text, deepl_key)
+                        st.session_state.processed_text['translated'] = translated_text
+                        
+                        # Optimize translation
+                        st.write("✨ Optimiere Übersetzung...")
+                        final_text = optimize_translation(text, translated_text, openai_key)
+                        st.session_state.processed_text['final'] = final_text
+                        
+                        status.update(label="Verarbeitung abgeschlossen! ✅", state="complete")
+                        
+                except Exception as e:
+                    st.error(f"Fehler bei der Verarbeitung: {str(e)}")
 
 # Results Display
 if st.session_state.processed_text['original']:
     st.write("---")
     
-    # Create tabs for different versions including new Analysis tab
+    # Create tabs for different versions including Analysis tab
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🌐 Original", 
         "🧹 Bereinigt", 
@@ -303,52 +383,53 @@ if st.session_state.processed_text['original']:
     st.subheader("Downloads")
     col1, col2, col3, col4, col5 = st.columns(5)
     
-    def download_text(text, button_label, filename):
-        st.download_button(
-            f"Download {button_label}",
-            text,
-            file_name=filename,
-            mime="text/plain",
-            use_container_width=True
-        )
-    
     # Get file prefix from cleaned text (which contains the title)
     file_prefix = get_file_prefix(st.session_state.processed_text['cleaned'])
     
     with col1:
-        download_text(
+        st.download_button(
+            "Download Original",
             st.session_state.processed_text['original'],
-            "Original",
-            f"{file_prefix}_original.txt"
+            file_name=f"{file_prefix}_original.txt",
+            mime="text/plain",
+            use_container_width=True
         )
     
     with col2:
-        download_text(
+        st.download_button(
+            "Download Bereinigt",
             st.session_state.processed_text['cleaned'],
-            "Bereinigt",
-            f"{file_prefix}_bereinigt.txt"
+            file_name=f"{file_prefix}_bereinigt.txt",
+            mime="text/plain",
+            use_container_width=True
         )
     
     with col3:
-        download_text(
+        st.download_button(
+            "Download DeepL",
             st.session_state.processed_text['translated'],
-            "DeepL",
-            f"{file_prefix}_deepl.txt"
+            file_name=f"{file_prefix}_deepl.txt",
+            mime="text/plain",
+            use_container_width=True
         )
     
     with col4:
-        download_text(
+        st.download_button(
+            "Download Final",
             st.session_state.processed_text['final'],
-            "Final",
-            f"{file_prefix}_final.txt"
+            file_name=f"{file_prefix}_final.txt",
+            mime="text/plain",
+            use_container_width=True
         )
     
     with col5:
         if st.session_state.processed_text.get('analysis'):
-            download_text(
+            st.download_button(
+                "Download Prüfbericht",
                 st.session_state.processed_text['analysis'],
-                "Prüfbericht",
-                f"{file_prefix}_pruefbericht.txt"
+                file_name=f"{file_prefix}_pruefbericht.txt",
+                mime="text/plain",
+                use_container_width=True
             )
 
     
