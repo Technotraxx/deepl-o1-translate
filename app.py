@@ -250,7 +250,7 @@ if st.session_state.processed_text['original']:
             "Finale Version",
             st.session_state.processed_text['final'],
             height=400,
-            disabled=True
+            disabled=False
         )
 
     with tab5:
