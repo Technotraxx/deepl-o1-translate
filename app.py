@@ -4,6 +4,7 @@ import deepl
 from openai import OpenAI
 import json
 from functools import partial
+from datetime import datetime
 
 # ======================================================================
 # 0) Page Configuration
