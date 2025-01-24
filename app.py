@@ -350,44 +350,52 @@ if st.session_state.processed_text['original']:
     st.subheader("Downloads")
     col1, col2, col3, col4, col5 = st.columns(5)
     
-    def download_text(text, filename):
+    def download_text(text, button_label, filename):
         st.download_button(
-            f"Download {filename}",
+            f"Download {button_label}",
             text,
             file_name=filename,
             mime="text/plain",
             use_container_width=True
         )
     
+    # Get file prefix from cleaned text (which contains the title)
+    file_prefix = get_file_prefix(st.session_state.processed_text['cleaned'])
+    
     with col1:
         download_text(
             st.session_state.processed_text['original'],
-            "original.txt"
+            "Original",
+            f"{file_prefix}_original.txt"
         )
     
     with col2:
         download_text(
             st.session_state.processed_text['cleaned'],
-            "cleaned.txt"
+            "Bereinigt",
+            f"{file_prefix}_bereinigt.txt"
         )
     
     with col3:
         download_text(
             st.session_state.processed_text['translated'],
-            "translated.txt"
+            "DeepL",
+            f"{file_prefix}_deepl.txt"
         )
     
     with col4:
         download_text(
             st.session_state.processed_text['final'],
-            "final.txt"
+            "Final",
+            f"{file_prefix}_final.txt"
         )
     
     with col5:
         if st.session_state.processed_text.get('analysis'):
             download_text(
                 st.session_state.processed_text['analysis'],
-                "analysis.txt"
+                "Prüfbericht",
+                f"{file_prefix}_pruefbericht.txt"
             )
     
 # ======================================================================
