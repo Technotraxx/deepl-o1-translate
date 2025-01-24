@@ -154,12 +154,15 @@ def optimize_translation(cleaned_text: str, translated_text: str, openai_key: st
                         "type": "text",
                         "text": """Erstelle einen verbesserten, aber inhaltlich korrekten Artikel. Der Artikel ist für eine deutsche Nachrichtenseite. Es folgt der Original-Artikel von der Washington Post, der dann mit Deepl Pro automatisch übersetzt wurde. Diese Übersetzungen sind inhaltlich meistens zwar korrekt, aber sprachlich oft nicht gut (zu verschachtelte Sätze, Formulierungen die im Deutschen nicht verwendet werden oder missverständlich sind, Grammatik die eins-zu-eins aus dem Englische übernommen ist und im Deutschen nicht stimmt, teilweise werden Zitate nicht sauber übersetzt und zu stark verkürzt.) Gehe Satz- und Absatzweise vor und stelle sicher, dass wirklich alle Elemente des Originals in der finalen Übersetzung vorhanden sind. 
 
-Achte darauf, dass die Präzision der Übersetzung nicht zu Lasten der Lesbarkeit geht. Kurze und verständliche Sätze sind wichtig. Nur bei direkten Zitaten (üblicherweise durch Anführungszeichen erkenntlich) sollten im Ganzen übersetzt werden und nicht aufgeteilt werden.
+Achte darauf, dass die Präzision der Übersetzung nicht zu Lasten der Lesbarkeit geht. Kürze und verständliche Sätze sind wichtig. Nur bei direkten Zitaten (üblicherweise durch Anführungszeichen erkenntlich) sollten im Ganzen übersetzt werden und nicht aufgeteilt werden.
 Die englischen Originale verwenden oft viele Kommas, Neben- und Schachtelsätze oder andere komplizierte Strukturen. Daher sollte die finale Version diese Strukturen aufbrechen und für deutsche Leser besser aufbereiten - ohne die Aussagen und Fakten zu verfälschen.
+
+Der erste Satz im Artikel darf kein Schachtelsatz (Hauptsatz mit meheren Nebensätzen). Dieser muss so umgeschrieben werden, dass ein einfacher und verständlicher Einstieg in den Artikel möglich ist.
+Die Fakten und Aussagen aus dem Original-Artikel müssen aber erhalten bleiben - es ist aber akzeptabel wenn das dann auf zwei oder sogar drei Sätze aufgeteilt wird.
 
 Übliche Anpassungen, die die Redaktion machen muss sind: 
 - Zitate müssen korrigiert werden, weil sie bei der automatischen Übersetzung nicht korrekt übertragen wurden
-- Fehlende wörtliche Zitate und präzise Formulierungen führen zu einem Verlust an Tiefe und Authentizität
+- fehlende wörtliche Zitate und präzise Formulierungen führen zu einem Verlust an Tiefe und Authentizität
 - Die Umformulierung von zentralen Aussagen kann die Wahrnehmung des Themas beeinflussen.
 - Ortsangabe am Beginn des Artikels 
 - Langer Satz wurde in 2 Sätze aufgeteilt 
