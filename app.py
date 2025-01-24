@@ -309,21 +309,23 @@ if st.session_state.processed_text['original']:
         )
 
     with tab5:
-        if not st.session_state.processed_text.get('analysis'):
-            if st.button("Qualitätsprüfung durchführen", type="primary", use_container_width=True):
-                try:
-                    with st.status("Führe Qualitätsprüfung durch...", expanded=True) as status:
-                        analysis_result = analyze_translation(
-                            st.session_state.processed_text['cleaned'],
-                            st.session_state.processed_text['final'],
-                            openai_key
-                        )
-                        st.session_state.processed_text['analysis'] = analysis_result
-                        status.update(label="Qualitätsprüfung abgeschlossen! ✅", state="complete")
-                except Exception as e:
-                    st.error(f"Fehler bei der Qualitätsprüfung: {str(e)}")
+        # Always show the analysis button
+        if st.button("Qualitätsprüfung durchführen", type="primary", use_container_width=True):
+            try:
+                with st.status("Führe Qualitätsprüfung durch...", expanded=True) as status:
+                    analysis_result = analyze_translation(
+                        st.session_state.processed_text['cleaned'],
+                        st.session_state.processed_text['final'],
+                        openai_key
+                    )
+                    st.session_state.processed_text['analysis'] = analysis_result
+                    status.update(label="Qualitätsprüfung abgeschlossen! ✅", state="complete")
+            except Exception as e:
+                st.error(f"Fehler bei der Qualitätsprüfung: {str(e)}")
         
+        # Show analysis results if available
         if st.session_state.processed_text.get('analysis'):
+            st.markdown("## Prüfbericht")
             st.markdown(st.session_state.processed_text['analysis'])
             
             # Download button for analysis
