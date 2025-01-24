@@ -133,7 +133,8 @@ def optimize_translation(cleaned_text: str, translated_text: str, openai_key: st
     response = client.chat.completions.create(
         model="o1",
         messages=get_translation_messages(cleaned_text, translated_text),
-        response_format={"type": "text"}
+        response_format={"type": "text"},
+        reasoning_effort="medium"
     )
     return response.choices[0].message.content
 
