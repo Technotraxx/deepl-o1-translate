@@ -265,6 +265,15 @@ if st.button("Artikel verarbeiten", type="primary", use_container_width=True):
         st.error("Bitte füllen Sie alle erforderlichen Felder aus (URL und API-Keys)")
     else:
         try:
+            # Reset all stored texts including analysis
+            st.session_state.processed_text = {
+                'original': '',
+                'cleaned': '',
+                'translated': '',
+                'final': '',
+                'analysis': ''
+            }
+            
             with st.status("Verarbeite Artikel...", expanded=True) as status:
                 # Extract text
                 st.write("🔍 Extrahiere Text von URL...")
@@ -355,16 +364,7 @@ if st.session_state.processed_text['original']:
         if st.session_state.processed_text.get('analysis'):
             st.markdown("## Prüfbericht")
             st.markdown(st.session_state.processed_text['analysis'])
-            
-            # Download button for analysis
-            st.download_button(
-                "Download Prüfbericht",
-                st.session_state.processed_text['analysis'],
-                file_name="quality_report.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
-    
+
     # Download buttons for all versions
     st.write("---")
     st.subheader("Downloads")
@@ -417,6 +417,7 @@ if st.session_state.processed_text['original']:
                 "Prüfbericht",
                 f"{file_prefix}_pruefbericht.txt"
             )
+
     
 # ======================================================================
 # 6) Footer
