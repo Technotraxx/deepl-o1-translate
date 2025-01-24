@@ -6,13 +6,33 @@ import json
 from functools import partial
 
 # ======================================================================
-# 1) Page Configuration
+# 0) Page Configuration
 # ======================================================================
 st.set_page_config(
     page_title="Artikel Übersetzer (nur für intere Tests)",
     page_icon="🌐",
     layout="wide"
 )
+
+# ======================================================================
+# 1) Helper Functions
+# ======================================================================
+def get_file_prefix(text: str) -> str:
+    """Extracts first 5 words from the text and adds current date"""
+    try:
+        # Get first line (title)
+        first_line = text.split('\n')[0] if text else "Untitled"
+        # Get first 5 words
+        words = first_line.split()[:5]
+        title_prefix = '_'.join(words)
+        # Clean title (remove special chars)
+        title_prefix = ''.join(c if c.isalnum() or c == '_' else '' for c in title_prefix)
+        # Add date
+        date_str = datetime.now().strftime("%Y_%m_%d")
+        return f"{title_prefix}_{date_str}"
+    except Exception:
+        # Fallback if something goes wrong
+        return f"article_{datetime.now().strftime('%Y_%m_%d')}"
 
 # ======================================================================
 # 2) Session State Initialization
